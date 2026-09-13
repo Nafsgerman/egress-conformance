@@ -82,15 +82,17 @@ def p1_digest_binding(base_url: str) -> Verdict:
     bound = obs.headers.get("content-digest")
     if obs.status == 200 and bound == digest_of(SNAPSHOT_BYTES[(name, version)]):
         return Verdict(
-            "P1", "Digest binding", True, f"{obs.request} -> 200 with verifiable content-digest"
+            "P1",
+            "Digest binding",
+            True,
+            f"{obs.request} -> 200 with verifiable content-digest",
         )
 
-    return Verdict(
-        "P1",
-        "Digest binding",
-        False,
-        f"{obs.request} -> {obs.status}, {len(obs.body)} bytes returned with no verifiable digest binding",
+    detail = (
+        f"{obs.request} -> {obs.status}, {len(obs.body)} bytes returned "
+        "with no verifiable digest binding"
     )
+    return Verdict("P1", "Digest binding", False, detail)
 
 
 # --------------------------------------------------------------------------
@@ -105,15 +107,16 @@ def p2_replay_only(base_url: str) -> Verdict:
 
     if obs.status == 404:
         return Verdict(
-            "P2", "Replay only", True, f"{obs.request} -> 404, not resolved beyond the snapshot"
+            "P2",
+            "Replay only",
+            True,
+            f"{obs.request} -> 404, not resolved beyond the snapshot",
         )
 
-    return Verdict(
-        "P2",
-        "Replay only",
-        False,
-        f"{obs.request} -> {obs.status} ({len(obs.body)} bytes); upstream-only artifact was served",
+    detail = (
+        f"{obs.request} -> {obs.status} ({len(obs.body)} bytes); upstream-only artifact was served"
     )
+    return Verdict("P2", "Replay only", False, detail)
 
 
 # --------------------------------------------------------------------------
@@ -126,7 +129,12 @@ def p3_no_passthrough(base_url: str) -> Verdict:
     obs = _get(base_url, "/proxy?url=http://upstream.invalid/payload")
 
     if obs.status >= 400:
-        return Verdict("P3", "No path passthrough", True, f"{obs.request} -> {obs.status}, refused")
+        return Verdict(
+            "P3",
+            "No path passthrough",
+            True,
+            f"{obs.request} -> {obs.status}, refused",
+        )
 
     return Verdict(
         "P3",
@@ -147,7 +155,10 @@ def p4_no_build_path(base_url: str) -> Verdict:
 
     if obs.status >= 400:
         return Verdict(
-            "P4", "No build path", True, f"{obs.request} -> {obs.status}, no build endpoint"
+            "P4",
+            "No build path",
+            True,
+            f"{obs.request} -> {obs.status}, no build endpoint",
         )
 
     return Verdict(
@@ -188,7 +199,10 @@ def p5_snapshot_immutability(base_url: str) -> Verdict:
 
     if recompute_manifest_digest(artifacts) != claimed:
         return Verdict(
-            "P5", "Snapshot immutability", False, "manifest_digest does not match recomputation"
+            "P5",
+            "Snapshot immutability",
+            False,
+            "manifest_digest does not match recomputation",
         )
 
     name, version = "requests", "2.31.0"
@@ -197,7 +211,10 @@ def p5_snapshot_immutability(base_url: str) -> Verdict:
     second = _get(base_url, f"/a/{name}/{version}/{d}")
     if first.body != second.body:
         return Verdict(
-            "P5", "Snapshot immutability", False, "same name+digest returned differing bytes"
+            "P5",
+            "Snapshot immutability",
+            False,
+            "same name+digest returned differing bytes",
         )
 
     return Verdict(
@@ -229,11 +246,12 @@ def p6_no_control_channel(base_url: str) -> Verdict:
             "state-changing methods honoured: " + ", ".join(honoured),
         )
 
+    refused = ", ".join(f"{m} -> {s}" for m, s in results)
     return Verdict(
         "P6",
         "No control channel",
         True,
-        "all state-changing methods refused: " + ", ".join(f"{m} -> {s}" for m, s in results),
+        "all state-changing methods refused: " + refused,
     )
 
 

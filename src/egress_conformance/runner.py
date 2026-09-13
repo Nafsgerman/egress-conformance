@@ -27,16 +27,16 @@ def _print_verdicts(label: str, verdicts: list[Verdict]) -> int:
 def _print_matrix(compliant: list[Verdict], proxy: list[Verdict]) -> None:
     print("\nDiscrimination matrix")
     print("-" * 78)
-    print(
+    header = (
         f"  {'':4} {'predicate':26} {'compliant':>12} {'caching proxy':>15} {'discriminates':>14}"
     )
-    for c, p in zip(compliant, proxy):
+    print(header)
+    for c, p in zip(compliant, proxy, strict=True):
         disc = "yes" if c.passed != p.passed else "no"
-        print(
-            f"  {c.predicate:4} {c.title:26} "
-            f"{('PASS' if c.passed else 'FAIL'):>12} {('PASS' if p.passed else 'FAIL'):>15} {disc:>14}"
-        )
-    n = sum(1 for c, p in zip(compliant, proxy) if c.passed != p.passed)
+        a = "PASS" if c.passed else "FAIL"
+        b = "PASS" if p.passed else "FAIL"
+        print(f"  {c.predicate:4} {c.title:26} {a:>12} {b:>15} {disc:>14}")
+    n = sum(1 for c, p in zip(compliant, proxy, strict=True) if c.passed != p.passed)
     print(f"\n  {n} of {len(compliant)} predicates discriminate between the two references.")
 
 

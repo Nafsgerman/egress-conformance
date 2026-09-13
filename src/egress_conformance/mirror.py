@@ -79,7 +79,11 @@ class _BaseHandler(BaseHTTPRequestHandler):
         return
 
     def _send(
-        self, status: int, body: bytes, content_type: str = "application/octet-stream", **headers
+        self,
+        status: int,
+        body: bytes,
+        content_type: str = "application/octet-stream",
+        **headers,
     ):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
@@ -213,7 +217,7 @@ class MirrorServer:
         host, port = self._httpd.server_address[:2]
         return f"http://{host}:{port}"
 
-    def start(self) -> "MirrorServer":
+    def start(self) -> MirrorServer:
         self._thread.start()
         return self
 
